@@ -1,13 +1,14 @@
 {
-  "name": "groupproject",
+  "name": "testproject4",
   "version": "1.0.0",
-  "description": "Andrew Britz <br/> Nduvho Ramashia <br/> Mfaniseni Thusi",
+  "description": "Andrew Britz <br/>\r Nduvho Ramashia <br/>\r Mfaniseni Thusi",
   "main": "index.js",
   "scripts": {},
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "express-session": "^1.18.0"
   }
 }
