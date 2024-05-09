@@ -1,5 +1,5 @@
 const request = require("supertest");
-const app = require("../../index"); // Adjust path according to your project structure
+const { app } = require("../../app");
 
 describe("Express App Tests", () => {
   let sessionCookie;
@@ -63,13 +63,4 @@ describe("Express App Tests", () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual([]);
   });
-
-//   test("GET /loggedInUsers should return list of logged-in users when logged in", async () => {
-//     const response = await request(app)
-//       .get("/loggedInUsers")
-//       .set("Cookie", sessionCookie);
-
-//     expect(response.statusCode).toBe(200);
-//     expect(response.body).toEqual([{ displayName: "JohnDoe" }]);
-//   });
 });
