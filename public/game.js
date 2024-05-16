@@ -1,143 +1,80 @@
-function fetchLoggedInUsers() {
-  fetch("/loggedInUsers")
-    .then((response) => response.json())
-    .then((data) => {
-      const loggedInUsersTable = document.getElementById("loggedInUsersTable");
-      data.forEach((user) => {
-        const row = loggedInUsersTable.insertRow(-1);
-        const cell = row.insertCell(0);
-        cell.textContent = user.displayName;
-      });
-    });
-}
+document.addEventListener('DOMContentLoaded', function () {
+    const socket = io();
 
-let canvas;
-let context;
+    const gameArea = document.getElementById('game-area');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const gameMessages = document.getElementById('game-messages');
+    const typingIndicator = document.getElementById('typing-indicator');
 
-function initializeCanvas() {
-  canvas = document.getElementById("drawingCanvas");
-  context = canvas.getContext("2d");
-}
+    gameArea.style.display = 'block';
 
-function addEventListeners() {
-  canvas.addEventListener("mousedown", startDrawing);
-  canvas.addEventListener("mousemove", draw);
-  canvas.addEventListener("mouseup", endDrawing);
-  canvas.addEventListener("mouseout", endDrawing);
+    socket.on('gameMessage', handleMessage);
+    socket.on('playerTyping', handlePlayerTyping);
+    socket.on('yourTurn', handleYourTurn);
+    socket.on('notYourTurn', handleNotYourTurn);
 
-  document.getElementById("clearBtn").addEventListener("click", function () {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-  });
-
-  document.getElementById("leaveBtn").addEventListener("click", function () {
-    fetch("/logout").then((response) => {
-      if (response.redirected) {
-        window.location.href = response.url;
-      }
-    });
-  });
-
-  document
-    .getElementById("colorSelect")
-    .addEventListener("change", function (e) {
-      currentColor = e.target.value;
+    // Error handling events
+    socket.on('connect_error', function(err) {
+        console.log('Connection failed', err);
     });
 
-  document
-    .getElementById("thicknessSelect")
-    .addEventListener("change", function (e) {
-      currentThickness = parseInt(e.target.value);
+    socket.on('connect_timeout', function() {
+        console.log('Connection timeout');
     });
 
-  document.getElementById("eraserBtn").addEventListener("click", function () {
-    isErasing = !isErasing;
-    document.getElementById("eraserBtn").classList.toggle("active", isErasing);
-    if (isErasing) {
-      document.getElementById("thicknessSelect").value = "4"; // Set thickness to 4 for eraser
-    } else {
-      document.getElementById("thicknessSelect").value = "1"; // Reset thickness to default when not erasing
-    }
-  });
-
-  document
-    .getElementById("submitDrawingBtn")
-    .addEventListener("click", function () {
-      var canvasData = canvas.toDataURL(); // Get the image data from the canvas
-
-      // Open the new page
-      var newWindow = window.open("describeDrawing.html");
-      // Once the new page is loaded, set the drawing as the source of the image element
-      newWindow.onload = function () {
-        var imgElement = newWindow.document.getElementById("drawnImage");
-        imgElement.src = canvasData;
-      };
-      context.clearRect(0, 0, canvas.width, canvas.height);
+    socket.on('reconnect', function(number) {
+        console.log('Successfully reconnected after', number, 'attempts');
     });
 
-  window.addEventListener("message", handleMessage);
+    socket.on('reconnect_attempt', function() {
+        console.log('Attempting to reconnect');
+    });
 
-  function handleMessage(event) {
-    // Check if the origin of the message is from the display.html page
-    if (event.origin !== window.location.origin) {
-      return; // Ignore messages from other origins
+    socket.on('reconnecting', function(number) {
+        console.log('Reconnecting attempt number', number);
+    });
+
+    socket.on('reconnect_error', function(err) {
+        console.log('Reconnection failed', err);
+    });
+
+    socket.on('reconnect_failed', function() {
+        console.log('Failed to reconnect');
+    });
+
+    sendButton.addEventListener('click', sendMessage);
+
+    function handleMessage(data) {
+        const li = document.createElement('li');
+        li.textContent = data.message;
+        gameMessages.appendChild(li);
     }
 
-    // Update the paragraph with the received text input value
-    document.getElementById("received-image-description").textContent =
-      "Draw a: " + event.data;
-  }
-}
+    function handlePlayerTyping(username) {
+        typingIndicator.textContent = `${username} is typing...`;
+    }
 
-// const canvas = document.getElementById("drawingCanvas");
-// const context = canvas.getContext("2d");
+    function handleYourTurn() {
+        enableMessageInput();
+    }
 
-let isDrawing = false;
-let currentColor = "black";
-let currentThickness = 1;
-let isErasing = false;
+    function handleNotYourTurn() {
+        alert("It's not your turn!");
+    }
 
-function startDrawing(e) {
-  isDrawing = true;
-  draw(e);
-}
+    function enableMessageInput() {
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+    }
 
-function endDrawing() {
-  isDrawing = false;
-  context.beginPath();
-}
-
-function getDrawingAttributes(isErasing, currentColor, currentThickness) {
-  const lineWidth = isErasing ? 4 : currentThickness;
-  const strokeStyle = isErasing ? "white" : currentColor;
-
-  return { lineWidth, strokeStyle };
-}
-
-function draw(e) {
-  if (!isDrawing) return;
-
-  const x = e.clientX - canvas.offsetLeft;
-  const y = e.clientY - canvas.offsetTop;
-
-  const { lineWidth, strokeStyle } = getDrawingAttributes(
-    isErasing,
-    currentColor,
-    currentThickness
-  );
-
-  context.lineWidth = lineWidth;
-  context.lineCap = "round";
-  context.strokeStyle = strokeStyle;
-
-  context.lineTo(x, y);
-  context.stroke();
-  context.beginPath();
-  context.moveTo(x, y);
-}
-
-module.exports = {
-  fetchLoggedInUsers,
-  initializeCanvas,
-  addEventListeners,
-  getDrawingAttributes,
-};
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message !== '') {
+            socket.emit('submitTurn', { message });
+            messageInput.value = '';
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+        }
+    }
+});

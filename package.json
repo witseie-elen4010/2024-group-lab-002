@@ -13,9 +13,11 @@
     "canvas": "^2.11.2",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
+    "mongoose": "^8.3.5",
     "node-fetch": "^2.7.0",
     "socket.io": "^4.7.5",
-    "socket.io-client": "^4.7.5"
+    "socket.io-client": "^4.7.5",
+    "uuid": "^9.0.1"
   },
   "jest": {
     "setupFiles": [
