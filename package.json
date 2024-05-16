@@ -2,10 +2,8 @@
   "name": "testproject4",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "jest --coverage --detectOpenHandles"
-  },
+  "main": "server.js",
+  "scripts": {},
   "keywords": [],
   "author": "",
   "license": "ISC",
