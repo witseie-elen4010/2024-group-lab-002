@@ -1,143 +1,44 @@
-function fetchLoggedInUsers() {
-  fetch("/loggedInUsers")
-    .then((response) => response.json())
-    .then((data) => {
-      const loggedInUsersTable = document.getElementById("loggedInUsersTable");
-      data.forEach((user) => {
-        const row = loggedInUsersTable.insertRow(-1);
-        const cell = row.insertCell(0);
-        cell.textContent = user.displayName;
-      });
-    });
-}
+// game.js
 
-let canvas;
-let context;
+document.addEventListener('DOMContentLoaded', function () {
+    const socket = io();
 
-function initializeCanvas() {
-  canvas = document.getElementById("drawingCanvas");
-  context = canvas.getContext("2d");
-}
+    const connectedUsersList = document.getElementById('user-list');
+    const usernameDisplay = document.getElementById('username-display');
 
-function addEventListeners() {
-  canvas.addEventListener("mousedown", startDrawing);
-  canvas.addEventListener("mousemove", draw);
-  canvas.addEventListener("mouseup", endDrawing);
-  canvas.addEventListener("mouseout", endDrawing);
-
-  document.getElementById("clearBtn").addEventListener("click", function () {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-  });
-
-  document.getElementById("leaveBtn").addEventListener("click", function () {
-    fetch("/logout").then((response) => {
-      if (response.redirected) {
-        window.location.href = response.url;
-      }
-    });
-  });
-
-  document
-    .getElementById("colorSelect")
-    .addEventListener("change", function (e) {
-      currentColor = e.target.value;
+    socket.on('connect', function () {
+        // Upon connection, inform the server to assign a user ID
+        socket.emit('assignUserId');
     });
 
-  document
-    .getElementById("thicknessSelect")
-    .addEventListener("change", function (e) {
-      currentThickness = parseInt(e.target.value);
+    socket.on('userIdAssigned', function (userId) {
+        // Display the user's ID
+        usernameDisplay.textContent = `Your User ID: ${userId}`;
     });
 
-  document.getElementById("eraserBtn").addEventListener("click", function () {
-    isErasing = !isErasing;
-    document.getElementById("eraserBtn").classList.toggle("active", isErasing);
-    if (isErasing) {
-      document.getElementById("thicknessSelect").value = "4"; // Set thickness to 4 for eraser
-    } else {
-      document.getElementById("thicknessSelect").value = "1"; // Reset thickness to default when not erasing
-    }
-  });
-
-  document
-    .getElementById("submitDrawingBtn")
-    .addEventListener("click", function () {
-      var canvasData = canvas.toDataURL(); // Get the image data from the canvas
-
-      // Open the new page
-      var newWindow = window.open("describeDrawing.html");
-      // Once the new page is loaded, set the drawing as the source of the image element
-      newWindow.onload = function () {
-        var imgElement = newWindow.document.getElementById("drawnImage");
-        imgElement.src = canvasData;
-      };
-      context.clearRect(0, 0, canvas.width, canvas.height);
+    socket.on('userConnected', function (users) {
+        updateUserList(users);
     });
 
-  window.addEventListener("message", handleMessage);
+    socket.on('userDisconnected', function (userId) {
+        // Update user list when a user disconnects
+        deleteDisconnectedUser(userId);
+    });
 
-  function handleMessage(event) {
-    // Check if the origin of the message is from the display.html page
-    if (event.origin !== window.location.origin) {
-      return; // Ignore messages from other origins
+    function updateUserList(users) {
+        connectedUsersList.innerHTML = ''; // Clear the list first
+
+        users.forEach(function (user) {
+            const li = document.createElement('li');
+            li.textContent = user.username;
+            connectedUsersList.appendChild(li);
+        });
     }
 
-    // Update the paragraph with the received text input value
-    document.getElementById("received-image-description").textContent =
-      "Draw a: " + event.data;
-  }
-}
-
-// const canvas = document.getElementById("drawingCanvas");
-// const context = canvas.getContext("2d");
-
-let isDrawing = false;
-let currentColor = "black";
-let currentThickness = 1;
-let isErasing = false;
-
-function startDrawing(e) {
-  isDrawing = true;
-  draw(e);
-}
-
-function endDrawing() {
-  isDrawing = false;
-  context.beginPath();
-}
-
-function getDrawingAttributes(isErasing, currentColor, currentThickness) {
-  const lineWidth = isErasing ? 4 : currentThickness;
-  const strokeStyle = isErasing ? "white" : currentColor;
-
-  return { lineWidth, strokeStyle };
-}
-
-function draw(e) {
-  if (!isDrawing) return;
-
-  const x = e.clientX - canvas.offsetLeft;
-  const y = e.clientY - canvas.offsetTop;
-
-  const { lineWidth, strokeStyle } = getDrawingAttributes(
-    isErasing,
-    currentColor,
-    currentThickness
-  );
-
-  context.lineWidth = lineWidth;
-  context.lineCap = "round";
-  context.strokeStyle = strokeStyle;
-
-  context.lineTo(x, y);
-  context.stroke();
-  context.beginPath();
-  context.moveTo(x, y);
-}
-
-module.exports = {
-  fetchLoggedInUsers,
-  initializeCanvas,
-  addEventListeners,
-  getDrawingAttributes,
-};
+    function deleteDisconnectedUser(userId) {
+        const userItem = document.querySelector(`#connected-users-list li[data-user-id="${userId}"]`);
+        if (userItem) {
+            userItem.remove();
+        }
+    }
+});

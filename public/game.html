@@ -1,167 +1,23 @@
+<!-- game.html -->
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
-    <style>
-        #container {
-            display: flex;
-            align-items: flex-start;
-        }
-
-        #drawingCanvas {
-            border: 1px solid #000;
-            margin-right: 20px;
-        }
-
-        table {
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        .controls {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            margin-top: 5px;
-        }
-
-        .controls>* {
-            margin-right: 10px;
-        }
-
-        #leaveBtn {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-        }
-
-        #eraserBtn.active {
-            background-color: gold;
-        }
-
-        #submitDrawingBtn {}
-
-        .page-container {
-            margin-block: 1rem;
-        }
-
-        #received-image-description {
-            font-size: 25px;
-            color: blue;
-        }
-    </style>
-
-    <title>Game Page</title>
+    <title>Game Screen</title>
 </head>
-
 <body>
-    <div class="container page-container">
-        <div class="row">
-            <div class="col">
-                <h1>Welcome to the Game Page!</h1>
-                <p id="received-image-description"></p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-8">
-                <div class="row">
-                    <canvas id="drawingCanvas" width="800" height="400"></canvas>
-                </div>
-                <div class="row">
-                    <div class="controls">
-                        <label for="colorSelect">Color:</label>
-                        <select id="colorSelect">
-                            <option value="black">Black</option>
-                            <option value="red">Red</option>
-                            <option value="green">Green</option>
-                            <option value="blue">Blue</option>
-                        </select>
-                        <label for="thicknessSelect">Thickness:</label>
-                        <select id="thicknessSelect">
-                            <option value="1">1</option>
-                            <option value="3">3</option>
-                            <option value="5">5</option>
-                            <option value="8">8</option>
-                        </select>
-                        <button id="eraserBtn">Eraser</button>
-                        <button id="clearBtn">Clear Canvas</button>
-                        <button id="submitDrawingBtn">Submit</button>
-                        <button id="leaveBtn">Leave</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-4">
-                <h2>Logged-in Users:</h2>
-                <table id="loggedInUsersTable">
-                    <tr>
-                        <th>Display Name</th>
-                    </tr>
-                </table>
-            </div>
+    <div id="game-screen">
+        <h1>Game Screen</h1>
+        <div id="username-display"></div>
+        <div id="connected-users-list">
+            <h3>Connected Users</h3>
+            <ul id="user-list"></ul>
         </div>
     </div>
 
-    <script src="./game.js"></script> 
-    <script>
-        initializeCanvas();
-        addEventListeners();
-        fetchLoggedInUsers();
-      </script>
-
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="game.js"></script>
 </body>
-
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
-    <title>Game Page</title>
-</head>
-
-<body>
-
-
-</body>
-
 </html>
