@@ -1,3 +1,5 @@
+// client.js
+
 document.addEventListener('DOMContentLoaded', function () {
     const socket = io();
 
@@ -7,10 +9,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const startGameButton = document.getElementById('start-game-button');
     const waitingMessage = document.getElementById('waiting-message');
 
+    // Hide the user list and game screen initially
     userListDiv.style.display = 'none';
+    document.getElementById('game-screen').style.display = 'none';
 
-    let loggedIn = false;
-    let sessionToken = localStorage.getItem('sessionToken');
+    let loggedIn = false; // Flag to track if the user has logged in
 
     loginButton.addEventListener('click', function (event) {
         event.preventDefault();
@@ -19,18 +22,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const password = document.getElementById('password-input').value.trim();
 
         if (username !== '' && password !== '') {
-            socket.emit('setUserCredentials', { username, password, sessionToken });
+            socket.emit('setUserCredentials', { username, password });
             credentialsForm.style.display = 'none';
-            loggedIn = true;
+            loggedIn = true; // Set the loggedIn flag to true after successful login
         }
     });
 
-    socket.on('sessionToken', function (token) {
-        sessionToken = token;
-        localStorage.setItem('sessionToken', sessionToken);
-    });
-
     socket.on('userConnected', function (users) {
+        // Only display the user list if the user has logged in
         if (loggedIn) {
             updateUserList(users);
             userListDiv.style.display = 'block';
@@ -50,11 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
         startGame();
     });
 
-    window.addEventListener('beforeunload', function (event) {
-        // Emit an event to the server to indicate that the browser is being closed
-        socket.emit('browserClosed');
-    });
-
     function updateUserList(users) {
         const userList = document.getElementById('user-list');
         userList.innerHTML = '';
@@ -72,6 +66,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function startGame() {
-        window.location.href = '/game';
+        // Hide the login form and user list, and show the game screen components
+        credentialsForm.style.display = 'none';
+        userListDiv.style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
     }
 });

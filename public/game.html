@@ -1,17 +1,23 @@
-<!-- Example structure of game.html -->
+<!-- game.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Meta tags, title, stylesheets, etc. -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Screen</title>
 </head>
 <body>
-    <div id="users-list" class="user-list" style="display:none;">
-        <h3>Players</h3>
-        <ul id="user-list"></ul>
-        <!-- Start Game button and other elements -->
+    <div id="game-screen">
+        <h1>Game Screen</h1>
+        <div id="username-display"></div>
+        <div id="connected-users-list">
+            <h3>Connected Users</h3>
+            <ul id="user-list"></ul>
+        </div>
     </div>
-    <!-- Other content of the game page -->
+
     <script src="/socket.io/socket.io.js"></script>
-    <script src="client.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
