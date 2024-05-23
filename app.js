@@ -13,7 +13,8 @@ let gameState = {
   players: {},
   drawings: [],
   texts: []
-};
+}; 
+//
 
 // When a client connects
 io.on('connection', (socket) => {
