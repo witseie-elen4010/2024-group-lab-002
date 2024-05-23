@@ -17,13 +17,7 @@ document.getElementById('input-form').addEventListener('submit', async (event) =
     const input = document.getElementById('input').value;
 
     // Send player input to server
-    await fetch('/input', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ input }),
-    });
+
 
     // Clear input field
     document.getElementById('input').value = '';
