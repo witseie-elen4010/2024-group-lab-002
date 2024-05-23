@@ -1,169 +1,51 @@
-/*
-const express = require("express");
-const bodyParser = require("body-parser");
-const session = require("express-session");
-const socketIo = require("socket.io");
-const http = require("http");
+// Importing required modules
+const express = require('express');
+const http = require('http');
+const socketIO = require('socket.io');
 
+// Setting up express and adding socketIo middleware
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIO(server);
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
-app.use( 
-  session({
-    secret: "secret-key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
-// Middleware to check if the user is logged in
-const requireLogin = (req, res, next) => {
-  if (!req.session.displayName) {
-    return res.redirect("/");
-  }
-  next();
+// Storing the game state
+let gameState = {
+  players: {},
+  drawings: [],
+  texts: []
 };
 
-// Routes
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/loginPage.html");
-});
+// When a client connects
+io.on('connection', (socket) => {
+  console.log('User connected');
 
-app.post("/login", (req, res) => {
-  const { displayName, password } = req.body;
-  if (password === "brokenTelephone") {
-    // Here you can handle the display name as needed, for example, you can store it in a session
-    req.session.displayName = displayName;
-    // Redirect to the main game page
-    return res.redirect("/game"); // Change res.redirect to return res.redirect
-  } else {
-    res.send("Incorrect password. Please try again.");
-  }
-});
-
-// Route to serve the game page with authentication middleware
-app.get("/game", requireLogin, (req, res) => {
-  res.sendFile(__dirname + "/public/game.html");
-});
-
-// Route to log out the user
-app.get("/logout", (req, res) => {
-  req.session.destroy();
-  res.redirect("/");
-});
-
-// WebSocket connection handling
-io.on("connection", (socket) => {
-  console.log("A user connected");
-
-  // Handle drawing events
-  socket.on("draw", (data) => {
-    // Broadcast drawing data to all clients
-    io.emit("draw", data);
+  // When a new player joins
+  socket.on('new player', (playerName) => {
+    gameState.players[socket.id] = playerName;
+    io.emit('update game', gameState);
   });
 
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
+  // When a player submits a drawing
+  socket.on('submit drawing', (drawing) => {
+    gameState.drawings.push(drawing);
+    io.emit('update game', gameState);
+  });
+
+  // When a player submits a text
+  socket.on('submit text', (text) => {
+    gameState.texts.push(text);
+    io.emit('update game', gameState);
+  });
+
+  // When a player disconnects
+  socket.on('disconnect', () => {
+    delete gameState.players[socket.id];
+    io.emit('update game', gameState);
+    console.log('User disconnected');
   });
 });
 
-app.get("/loggedInUsers", (req, res) => {
-  const loggedInUsers = req.session.displayName
-    ? [{ displayName: req.session.displayName }]
-    : [];
-  res.json(loggedInUsers);
+// Starting our server
+server.listen(3000, () => {
+  console.log('Server started on port 3000');
 });
-
-module.exports = { app, server, io };
-
-const express = require("express");
-const bodyParser = require("body-parser");
-const session = require("express-session");
-const socketIo = require("socket.io");
-const http = require("http");
-
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
-app.use(
-  session({
-    secret: "secret-key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
-// Middleware to check if the user is logged in
-const requireLogin = (req, res, next) => {
-  if (!req.session.displayName) {
-    return res.redirect("/");
-  }
-  next();
-};
-
-// Routes
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/loginPage.html");
-});
-
-app.post("/login", (req, res) => {
-  const { displayName, password } = req.body;
-  if (password === "brokenTelephone") {
-    // Here you can handle the display name as needed, for example, you can store it in a session
-    req.session.displayName = displayName;
-    // Redirect to the main game page
-    return res.redirect("/game"); // Change res.redirect to return res.redirect
-  } else {
-    res.send("Incorrect password. Please try again.");
-  }
-});
-
-// Route to serve the game page with authentication middleware
-app.get("/game", requireLogin, (req, res) => {
-  res.sendFile(__dirname + "/public/game.html");
-});
-
-// Route to log out the user
-app.get("/logout", (req, res) => {
-  req.session.destroy();
-  res.redirect("/");
-});
-
-// WebSocket connection handling
-io.on("connection", (socket) => {
-  console.log("A user connected");
-
-  // Handle drawing events
-  socket.on("draw", (data) => {
-    // Broadcast drawing data to all clients
-    io.emit("draw", data);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
-  });
-});
-
-app.get("/loggedInUsers", (req, res) => {
-  const loggedInUsers = req.session.displayName
-    ? [{ displayName: req.session.displayName }]
-    : [];
-  res.json(loggedInUsers);
-});
-
-// Integrate with existing server code
-const { app: serverApp, server: serverServer, io: serverIo } = require('./server.js');
-serverApp.use(app);
-serverServer.listen(3000, () => {
-  console.log("Server running on port 3000");
-});
-serverIo.attach(serverServer);
-
-module.exports = { app: serverApp, server: serverServer, io: serverIo };
-*/
